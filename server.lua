@@ -1,5 +1,3 @@
-local ada_pwm = require("ada_pwm")
-
 function init()
     local config = require("config")
 
@@ -11,7 +9,7 @@ function init()
         wifi.sleeptype(wifi.LIGHT_SLEEP)
     end)
 
-    tmr.alarm(2, 10, tmr.ALARM_SINGLE, function()
+    tmr.alarm(2, 5*1000, tmr.ALARM_SINGLE, function()
         print(wifi.sta.getip())
     end)
 

@@ -18,11 +18,11 @@ function M.handle(client, request)
         local buf = "HTTP/1.1 200 OK\n\n"
         local lux = tsl2561.getlux()
         local raw1, raw2 = tsl2561.getrawchannels()
-        buf = buf .. "{ "
-        buf = buf .. "lux: " .. lux .. "\n"
-        buf = buf .. "raw1: " .. raw1 .. "\n"
-        buf = buf .. "raw2: " .. raw2 .. "\n"
-        buf = buf .. " ..}\n" 
+        buf = buf .. "{\n"
+        buf = buf .. "\"lux\": " .. lux .. ",\n"
+        buf = buf .. "\"raw1\": " .. raw1 .. ",\n"
+        buf = buf .. "\"raw2\": " .. raw2 .. "\n"
+        buf = buf .. "}\n" 
 
         client:send(buf)
         return 200, method
