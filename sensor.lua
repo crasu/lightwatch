@@ -11,9 +11,12 @@ function make_tsl_entry(sda, scl, tsl_address)
 end
 
 local TSL_LIST = {
-    make_tsl_entry(4,5, tsl2561.ADDRESS_GND),
     make_tsl_entry(4,5, tsl2561.ADDRESS_FLOAT),
     make_tsl_entry(4,5, tsl2561.ADDRESS_VDD),
+    make_tsl_entry(4,5, tsl2561.ADDRESS_GND),
+    make_tsl_entry(2,3, tsl2561.ADDRESS_FLOAT),
+    make_tsl_entry(2,3, tsl2561.ADDRESS_VDD),
+    make_tsl_entry(2,3, tsl2561.ADDRESS_GND)
 }
 
 local STATE = {
@@ -32,6 +35,7 @@ function M.measure_led_state(tsl_id, callback)
     local tsl_entry = TSL_LIST[tsl_id]
     local status = tsl2561.init(tsl_entry.sda, tsl_entry.scl, tsl_entry.addr)
     local measurements = {}
+    print("Started to measure: " .. tsl_id)
 
     if status == tsl2561.TSL2561_OK then
         print("tsl2561 init ok")
@@ -43,6 +47,8 @@ function M.measure_led_state(tsl_id, callback)
 
     function measure_task(i)
         raw1, raw2 = tsl2561.getrawchannels()
+        print("Raw measurements: " .. raw1 .. " " .. raw2)
+
         table.insert(measurements, raw1 + raw2)
 
         if i == 0 then
@@ -98,7 +104,7 @@ function M.create_sample_next(state_change_callback)
             end
 
             STATE[current_tsl_id] = M.determine_state(ret)
-            print("Updated state of tsl id " .. current_tsl_id .. " to " .. STATE[current_tsl_id])
+            print("State of tsl id " .. current_tsl_id .. " is " .. STATE[current_tsl_id])
             end)
     end
 end

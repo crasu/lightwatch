@@ -11,10 +11,14 @@ function M.handle(client, request, state)
     if method == "GET" and path == "/" then
         local buf = "HTTP/1.1 200 OK\n\n"
         buf = buf .. "{\n"
+        local state_str = {}
         for i,v in ipairs(state) do
-            buf = buf .. "state" .. i .. " = " .. v
+            if v then
+                state_str[i] = "state" .. i .. ' = "' .. v .. '"'
+            end
         end
-        buf = buf .. "}\n" 
+        buf = buf .. table.concat(state_str, ",\n")
+        buf = buf .. "\n}\n"
 
         client:send(buf)
     else
