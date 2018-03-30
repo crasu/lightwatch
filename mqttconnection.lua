@@ -15,23 +15,31 @@ function get_time()
     return string.format(fmt, tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"])
 end
 
-function M.init_mqtt()
-    local sensor = require("sensor")
+function handle_mqtt_error(client, reason)
+    print("Could not connect - retrying ....")
+    if M.measurement_timer then
+        M.measurement_timer:unregister()
+    end
+    tmr.create():alarm(10 * 1000, tmr.ALARM_SINGLE, mqtt_connect)
+end
 
-    local m = mqtt.Client("heating", 120)
-    m:connect("192.168.100.60", 1883, 0, function(client)
+function mqtt_connect()
+    local sensor = require("sensor")
+    M.mqtt_client:connect("192.168.100.60", 1883, 0, function(client)
         print("mqtt connected")
 
-        sensor.register_measurement_timer(2, function(current_tsl_id, old_state, new_state)
+        M.measurement_timer = sensor.register_measurement_timer(function(current_tsl_id, old_state, new_state)
             print("mqtt message send")
             local time = get_time()
             print(time)
             client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 1)
         end)
-    end,
-    function(client, reason)
-        print("mqtt failed reason: " .. reason)
-    end)
+    end, handle_mqtt_error)
+end
+
+function M.init_mqtt()
+    M.mqtt_client = mqtt.Client("heating", 120)
+	mqtt_connect()
 end
 
 return M

@@ -28,7 +28,7 @@ local STATE = {
     nil
 }
 
-local TSL_THRESHOLD = 6
+local TSL_THRESHOLD = 10
 local TSL_SAMPLES = 5
 
 function M.measure_led_state(tsl_id, callback)
@@ -109,12 +109,15 @@ function M.create_sample_next(state_change_callback)
     end
 end
 
-function M.register_measurement_timer(timer_id, change_callback)
+function M.register_measurement_timer(change_callback)
     sample_next = M.create_sample_next(change_callback)
+    local timer = tmr.create()
 
-    tmr.alarm(timer_id, 10*1000, tmr.ALARM_AUTO, function()
+    timer:alarm(10*1000, tmr.ALARM_AUTO, function()
         sample_next()
     end)
+
+    return timer
 end
 
 function M.getState()
