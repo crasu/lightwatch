@@ -25,7 +25,7 @@ end
 
 function handle_state_change(current_tsl_id, old_state, new_state)
     local time = get_time()
-    local ret = client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 1)
+    local ret = M.mqtt_client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 1)
     if ret then
         print("mqtt message send.")
     else
@@ -42,10 +42,10 @@ function mqtt_connect()
 
     local sensor = require("sensor")
     print("connecting ...")
-    M.mqtt_client:connect(mqtt_ip, mqtt_port, 0, function(client)
+    M.mqtt_client:connect(mqtt_ip, mqtt_port, 0, function(mqtt_client)
         print("mqtt connected")
-        M.measurement_timer = sensor.register_state_change_handler(handle_measurement_timer, handle_mqtt_error)
-    end)
+        M.measurement_timer = sensor.register_state_change_handler(handle_state_change)
+    end, handle_mqtt_error)
 end
 
 function M.init_mqtt()

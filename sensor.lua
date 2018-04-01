@@ -100,6 +100,7 @@ function M.create_sample_next(state_change_callback)
             print(old_state)
             if new_state ~= old_state then
                 print("state change detected")
+
                 if state_change_callback(current_tsl_id, old_state, new_state) then
                     STATE[current_tsl_id] = new_state
                 else
@@ -111,8 +112,8 @@ function M.create_sample_next(state_change_callback)
     end
 end
 
-function M.register_state_change_handler(change_callback)
-    sample_next = M.create_sample_next(change_callback)
+function M.register_state_change_handler(state_change_callback)
+    sample_next = M.create_sample_next(state_change_callback)
     local timer = tmr.create()
 
     timer:alarm(10*1000, tmr.ALARM_AUTO, function()
