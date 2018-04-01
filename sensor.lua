@@ -31,7 +31,7 @@ local STATE = {
 local TSL_THRESHOLD = 10
 local TSL_SAMPLES = 5
 
-function M.measure_led_state(tsl_id, callback)
+function M.measure_led(tsl_id, callback)
     local tsl_entry = TSL_LIST[tsl_id]
     local status = tsl2561.init(tsl_entry.sda, tsl_entry.scl, tsl_entry.addr)
     local measurements = {}
@@ -62,7 +62,7 @@ function M.measure_led_state(tsl_id, callback)
     measure_task(TSL_SAMPLES)
 end
 
-function M.determine_state(measurements)
+function M.determine_sensor_state(measurements)
     local above = false
     local below = false
     for i, v in ipairs(measurements) do
@@ -91,20 +91,22 @@ function M.create_sample_next(state_change_callback)
         current_tsl_id = current_tsl_id % #TSL_LIST
         current_tsl_id = current_tsl_id + 1
 
-        M.measure_led_state(current_tsl_id, function(ret)
-            local new_state = M.determine_state(ret)
-            print("New state:")
-            print(new_state)
-            local old_state = STATE[current_tsl_id]
-            print("Old state:")
-            print(old_state)
-            if new_state ~= old_state then
-                print("state change detected")
-                state_change_callback(current_tsl_id, old_state, new_state)
-            end
-
-            STATE[current_tsl_id] = M.determine_state(ret)
-            print("State of tsl id " .. current_tsl_id .. " is " .. STATE[current_tsl_id])
+        M.measure_led(current_tsl_id, function(ret)
+                local new_state = M.determine_sensor_state(ret)
+                print("New state:")
+                print(new_state)
+                local old_state = STATE[current_tsl_id]
+                print("Old state:")
+                print(old_state)
+                if new_state ~= old_state then
+                    print("state change detected")
+                    if state_change_callback(current_tsl_id, old_state, new_state) then
+                        STATE[current_tsl_id] = new_state
+                    else
+                        STATE[current_tsl_id] = old_state
+                    end
+                end
+                print("State of tsl id " .. current_tsl_id .. " is " .. STATE[current_tsl_id])
             end)
     end
 end

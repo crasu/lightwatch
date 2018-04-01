@@ -16,25 +16,36 @@ function get_time()
 end
 
 function handle_mqtt_error(client, reason)
-    print("Could not connect - retrying ....")
+    print("could not connect reason " .. tostring(reason))
     if M.measurement_timer then
         M.measurement_timer:unregister()
     end
     tmr.create():alarm(10 * 1000, tmr.ALARM_SINGLE, mqtt_connect)
 end
 
-function mqtt_connect()
-    local sensor = require("sensor")
-    M.mqtt_client:connect("192.168.100.60", 1883, 0, function(client)
-        print("mqtt connected")
+function handle_measurement_timer(current_tsl_id, old_state, new_state)
+    local time = get_time()
+    local ret = client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 1)
+    if ret then
+        print("mqtt message send.")
+    else
+        print("mqtt publish failed.")
+        handle_mqtt_error(nil, nil)
+    end
 
-        M.measurement_timer = sensor.register_measurement_timer(function(current_tsl_id, old_state, new_state)
-            print("mqtt message send")
-            local time = get_time()
-            print(time)
-            client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 1)
-        end)
-    end, handle_mqtt_error)
+    return ret
+end
+
+function mqtt_connect()
+    local mqtt_ip = "192.168.100.60"
+    local mqtt_port = 1883
+
+    local sensor = require("sensor")
+    print("connecting ...")
+    M.mqtt_client:connect(mqtt_ip, mqtt_port, 0, function(client)
+        print("mqtt connected")
+        M.measurement_timer = sensor.register_measurement_timer(handle_measurement_timer, handle_mqtt_error)
+    end)
 end
 
 function M.init_mqtt()
