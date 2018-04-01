@@ -92,22 +92,22 @@ function M.create_sample_next(state_change_callback)
         current_tsl_id = current_tsl_id + 1
 
         M.measure_led(current_tsl_id, function(ret)
-                local new_state = M.determine_sensor_state(ret)
-                print("new state:")
-                print(new_state)
-                local old_state = STATE[current_tsl_id]
-                print("old state:")
-                print(old_state)
-                if new_state ~= old_state then
-                    print("state change detected")
-                    if state_change_callback(current_tsl_id, old_state, new_state) then
-                        STATE[current_tsl_id] = new_state
-                    else
-                        STATE[current_tsl_id] = old_state
-                    end
+            local new_state = M.determine_sensor_state(ret)
+            print("new state:")
+            print(new_state)
+            local old_state = STATE[current_tsl_id]
+            print("old state:")
+            print(old_state)
+            if new_state ~= old_state then
+                print("state change detected")
+                if state_change_callback(current_tsl_id, old_state, new_state) then
+                    STATE[current_tsl_id] = new_state
+                else
+                    STATE[current_tsl_id] = old_state
                 end
-                print("state for tsl id " .. current_tsl_id .. " is " .. STATE[current_tsl_id])
-            end)
+            end
+            print("state for tsl id " .. current_tsl_id .. " is " .. STATE[current_tsl_id])
+        end)
     end
 end
 
