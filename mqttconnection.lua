@@ -1,11 +1,11 @@
 local M, module = {}, ...
 
 function M.format_message(id, state, time)
-    local buf = "{\n"
-    buf = buf .. " tsl_id: " .. id .. ",\n"
-    buf = buf ..' state: "' .. state .. '",\n'
-    buf = buf ..' time: "' .. time .. '",\n'
-    buf = buf .. "}\n"
+    local buf = '{\n'
+    buf = buf .. ' "tsl_id": ' .. id .. ',\n'
+    buf = buf ..' "state": "' .. state .. '",\n'
+    buf = buf ..' "time": "' .. time .. '"\n'
+    buf = buf .. '}\n'
     return buf
 end
 
@@ -25,7 +25,7 @@ end
 
 function handle_state_change(current_tsl_id, old_state, new_state)
     local time = get_time()
-    local ret = M.mqtt_client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 1)
+    local ret = M.mqtt_client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 0)
     if ret then
         print("mqtt message send.")
     else
