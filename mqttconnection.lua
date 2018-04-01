@@ -23,7 +23,7 @@ function handle_mqtt_error(client, reason)
     tmr.create():alarm(10 * 1000, tmr.ALARM_SINGLE, mqtt_connect)
 end
 
-function handle_measurement_timer(current_tsl_id, old_state, new_state)
+function handle_state_change(current_tsl_id, old_state, new_state)
     local time = get_time()
     local ret = client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 1)
     if ret then
@@ -44,7 +44,7 @@ function mqtt_connect()
     print("connecting ...")
     M.mqtt_client:connect(mqtt_ip, mqtt_port, 0, function(client)
         print("mqtt connected")
-        M.measurement_timer = sensor.register_measurement_timer(handle_measurement_timer, handle_mqtt_error)
+        M.measurement_timer = sensor.register_state_change_handler(handle_measurement_timer, handle_mqtt_error)
     end)
 end
 
