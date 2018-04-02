@@ -1,9 +1,10 @@
 local M, module = {}, ...
 
-function M.format_message(id, state, time)
+function M.format_message(id, old_state, new_state, time)
     local buf = '{\n'
     buf = buf .. ' "tsl_id": ' .. id .. ',\n'
-    buf = buf ..' "state": "' .. state .. '",\n'
+    buf = buf ..' "old_state": "' .. tostring(old_state) .. '",\n'
+    buf = buf ..' "state": "' .. tostring(new_state) .. '",\n'
     buf = buf ..' "time": "' .. time .. '"\n'
     buf = buf .. '}\n'
     return buf
@@ -32,7 +33,7 @@ end
 
 function handle_state_change(current_tsl_id, old_state, new_state)
     local time = get_time()
-    local published = mqtt_send(current_tsl_id, M.format_message(current_tsl_id, new_state, time))
+    local published = mqtt_send(current_tsl_id, M.format_message(current_tsl_id, old_state, new_state, time))
     if published then
         print("mqtt message send.")
     else
