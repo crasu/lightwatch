@@ -23,17 +23,24 @@ function handle_mqtt_error(client, reason)
     tmr.create():alarm(10 * 1000, tmr.ALARM_SINGLE, mqtt_connect)
 end
 
+function mqtt_send(current_tsl_id, message)
+    local topic = "heating/leds/" .. current_tsl_id
+
+    return M.mqtt_client:publish(topic, message, 0, 1) and
+    M.mqtt_client:publish("noretain/" .. topic, message, 0, 0)
+end
+
 function handle_state_change(current_tsl_id, old_state, new_state)
     local time = get_time()
-    local ret = M.mqtt_client:publish("heating/leds/" .. current_tsl_id, M.format_message(current_tsl_id, new_state, time), 0, 0)
-    if ret then
+    local published = mqtt_send(current_tsl_id, M.format_message(current_tsl_id, new_state, time))
+    if published then
         print("mqtt message send.")
     else
         print("mqtt publish failed.")
         handle_mqtt_error(nil, nil)
     end
 
-    return ret
+    return published
 end
 
 function mqtt_connect()
